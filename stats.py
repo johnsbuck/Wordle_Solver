@@ -1,5 +1,7 @@
 from collections import Counter
 import json
+import math
+from os.path import exists
 
 from Levenshtein import distance
 
@@ -52,10 +54,19 @@ def letter_match_comparisons(word_key_dict):
             print(i, len(keys))
         for k in range(i+1, len(keys)):
             dist = distance(keys[i], keys[k])
-            word_key_dict[keys[i]][dist] += 1
-            word_key_dict[keys[k]][dist] += 1
+            word_key_dict[keys[i]][dist] += word_key_dict[keys[k]][0]
+            word_key_dict[keys[k]][dist] += word_key_dict[keys[i]][0]
 
     return word_key_dict
+
+
+def generate_word_frequency_json(words, filename="data/word_frequency.json"):
+    word_key_dict = get_word_key_dict(words)
+    word_key_dict = letter_match_comparisons(word_key_dict)
+    word_dict = {x: word_key_dict[tuple(sorted(x))] for x in words}
+    if filename is not None:
+        json.dump(word_dict, open(filename, "w"))
+    return word_dict
 
 
 def main():
@@ -66,8 +77,9 @@ def main():
     print("Single Letter Count")
     print("================================")
     letter_count = get_single_letter_count(words)
-    for letter in letter_count:
-        print(letter, ":", "%2.1f" % (letter_count[letter] / len(words) * 100) + "%")
+    letters = sorted([(y, x) for x, y in letter_count.items()], reverse=True)
+    for pair in letters:
+        print(pair[1], ":", "%2.1f" % (pair[0]/ len(words) * 100) + "%")
 
     print()
     print("================================")
@@ -77,10 +89,29 @@ def main():
     key, count = find_most_common_set(word_key_dict)
     print(key, ':', count, '=', "%2.4f" % (count / len(words)) + '%')
 
-    word_key_dict = letter_match_comparisons(word_key_dict)
+    if not exists("data/word_frequency.json"):
+        generate_word_frequency_json(words, filename="data/word_frequency.json")
+    word_frequency = json.load(open("data/word_frequency.json", 'r'))
 
-    word_dict = {x: word_key_dict[tuple(sorted(x))] for x in words}
-    json.dump(word_dict, open("data/word_frequency.txt", "w"))
+    best = None
+    best_word = None
+    mean = 1 / 6.
+    for key in word_frequency:
+        frequency = [x / len(words) for x in word_frequency[key]]
+        curr = math.sqrt(sum(math.pow(x - mean, 2) for x in frequency) / len(frequency))
+        # curr = sum(frequency[4:])
+        if best is None or curr < best:
+            best = curr
+            best_word = key
+    print(best_word, best, word_frequency[best_word])
+
+    frequency = [x / len(words) for x in word_frequency[best_word]]
+    print("std:", math.sqrt(sum(math.pow(x - mean, 2) for x in frequency) / len(frequency)))
+    print(["%2.4f" % (x / len(words)) for x in word_frequency[best_word]])
+    print("liers")
+    frequency = [x / len(words) for x in word_frequency["leirs"]]
+    print("std:", math.sqrt(sum(math.pow(x - mean, 2) for x in frequency) / len(frequency)))
+    print(["%2.4f" % (x / len(words)) for x in word_frequency["liers"]])
 
 
 if __name__ == "__main__":
