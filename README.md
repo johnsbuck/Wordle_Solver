@@ -11,9 +11,9 @@ To run the wordle solver, run ```python wordle_solver.py```. After running, perf
 
 1. Insert given word to [Wordle site](https://www.powerlanguage.co.uk/wordle/).
 2. Input the result from the site in the following format:
-   1Grey letters = 0
-   2Yellow letters = 1
-   3Green letters = 2
+   1. Grey letters = 0
+   2. Yellow letters = 1
+   3. Green letters = 2
 3. Repeat this process with each newly given word until the word is found or no more rounds remain.
 
 ## Example
