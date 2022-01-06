@@ -24,7 +24,7 @@ What was the result of stoae?
 1=Yellow
 2=Green
 Word: stoae
- Ans: 20000
+ Ans: 21000
 
 What was the result of shist?
 0=Grey
